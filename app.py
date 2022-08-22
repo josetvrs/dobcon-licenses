@@ -1,3 +1,4 @@
+from crypt import methods
 from flask import Flask, jsonify, request, Response, session
 from flask_restful import Resource, Api
 from flask_cors import CORS
@@ -93,6 +94,13 @@ def get_device():
     response = {'pc_device' : device}
     return response
 
+@app.route('/get_available_licenses/<company>', methods = ['GET'])
+def get_available_licenses(company):
+    company = company.lower().replace(' ','_')
+    available_lic = db.dobcon_licenses.count_documents({'company':company, 'username':''})
+    response = {'available_licenses' : available_lic}
+    return response
+
 @app.route('/register_device', methods = ['PUT'])
 def register_device():
     username = request.json['username']
@@ -113,10 +121,10 @@ def register_device():
 
 @app.route('/check_device', methods = ['POST'])
 def check_device():
-    username = request.json['username']
+    email = request.json['email']
     pc_current_dev = request.json['pc_device']
 
-    lic = db.dobcon_licenses.find_one({'username':username})
+    lic = db.dobcon_licenses.find_one({'email':email})
     if lic:
         lic_id = lic['_id']
         pc_dev = lic['pc_device']
@@ -160,7 +168,6 @@ def assign_license():
     company = request.json['company']
     company = company.lower().replace(' ','_')
     empty_license = db.dobcon_licenses.find_one({'company':company, 'username':''})
-    
     username = request.json['username']
     email = request.json['email']
     role = request.json['role']
@@ -199,6 +206,19 @@ def reassign_license():
     response = {'license reassigned to':username, 'assigned license':str(lic_id)}
     return response
 
+@app.route('/change_username', methods=['PUT'])
+def chage_username():
+    old_username = request.json['old_username']
+    new_username = request.json['new_username']
+    lic = db.dobcon_licenses.find_one({'username':old_username})
+    lic_id = lic['_id']
+    db.dobcon_licenses.update_one({'_id': lic_id}, {'$set': {
+        'username': new_username
+    }})
+    response = {'Updated username':new_username, 'assigned license':str(lic_id)}
+    return response
+
+
 @app.route('/renew_license', methods = ['PUT'])
 def renew_license():
     username = request.json['username']
@@ -215,15 +235,15 @@ def renew_license():
     return response
     
 
-@app.route('/company_licenses', methods = ['GET'])
-def company_licenses():
-    company = request.json['company']
+@app.route('/company_licenses/<company>', methods = ['GET'])
+def company_licenses(company):
     company = company.lower().replace(' ','_')
     data = []
     cursor = list(db.dobcon_licenses.find({'company':company}))
     for license in cursor:
-        license['_id'] = str(license['_id'])
-        data.append(license)
+        if license['username'] != '':
+            license['_id'] = str(license['_id'])
+            data.append(license)
     return jsonify(data)
 
 # Remove all licenses in collection (FOR TEST ONLY)
