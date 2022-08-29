@@ -30,6 +30,12 @@ def get_licenses():
     response = json_util.dumps(licenses)
     return Response(response, mimetype='application/json')
 
+@app.route('/get_purchase_history', methods=['GET'])
+def get_purchase_history():
+    history = db.purchase_history.find()
+    response = json_util.dumps(history)
+    return Response(response, mimetype='application/json')
+
 # Create un-assigned licenses
 # Dobcon internal ONLY
 @app.route('/create_licenses', methods=['POST'])
@@ -65,6 +71,12 @@ def create_licenses():
             }) 
             created_licenses.append(str(license.inserted_id))
         response = json.dumps(created_licenses)
+        db.purchase_history.insert_one({
+            'company':company,
+            'licenses': no_licenses,
+            'buyer': buyer,
+            'buyer_email':buyer_email
+        })
         return jsonify(response)
 
 @app.route('/create_admin', methods=['POST'])
