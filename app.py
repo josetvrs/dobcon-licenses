@@ -32,11 +32,8 @@ def get_licenses():
 
 @app.route('/get_purchase_history', methods=['GET'])
 def get_purchase_history():
-    data = []
-    cursor = db.purchase_history.find()
-    for history in cursor:
-        data.append(history)
-    return jsonify(data)
+    history = db.purchase_history.find()
+    return jsonify(history)
 
 # Create un-assigned licenses
 # Dobcon internal ONLY
