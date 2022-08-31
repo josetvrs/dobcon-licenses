@@ -58,7 +58,6 @@ def create_licenses():
         # Create x licenses with the name of the company
         for _ in range(no_licenses):
             license = db.dobcon_licenses.insert_one({
-                'name':'',
                 'company':company, 
                 'username':'', 
                 'email':'', 
