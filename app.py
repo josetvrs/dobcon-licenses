@@ -58,6 +58,7 @@ def create_licenses():
         # Create x licenses with the name of the company
         for _ in range(no_licenses):
             license = db.dobcon_licenses.insert_one({
+                'name':'',
                 'company':company, 
                 'username':'', 
                 'email':'', 
@@ -82,10 +83,12 @@ def create_licenses():
 @app.route('/create_admin', methods=['POST'])
 def create_admin():
     company = "dobcon"
+    name = request.json["name"]
     username = request.json['username']
     email = request.json['email']
     role = request.json['role']
     license = db.dobcon_licenses.insert_one({
+        'name': name,
         'company': company,
         'username': username,
         'email': email,
@@ -177,6 +180,7 @@ def check_device():
 # Super User assigns each license
 @app.route('/assign_license', methods = ['PUT'])
 def assign_license():
+    name = request.json['name']
     company = request.json['company']
     company = company.lower().replace(' ','_')
     empty_license = db.dobcon_licenses.find_one({'company':company, 'username':''})
@@ -187,6 +191,7 @@ def assign_license():
         if username and email and role:
             empty_id = empty_license['_id']
             db.dobcon_licenses.update_one({'_id': empty_id}, {'$set': {
+                'name': name,
                 'username': username,
                 'email': email,
                 'role': role
@@ -200,6 +205,7 @@ def assign_license():
 
 @app.route('/reassign_license', methods = ['PUT'])
 def reassign_license():
+    name = request.json['name']
     old_username = request.json['old_username']
     company = request.json['company']
     company = company.lower().replace(' ','_')
@@ -209,6 +215,7 @@ def reassign_license():
     lic = db.dobcon_licenses.find_one({'username':old_username})
     lic_id = lic['_id']
     db.dobcon_licenses.update_one({'_id': lic_id}, {'$set': {
+        'name': name,
         'username': username,
         'email': email,
         'pc_device':'',
