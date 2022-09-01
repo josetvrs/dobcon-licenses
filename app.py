@@ -48,10 +48,13 @@ def create_licenses():
     license_type = request.json['license_type']
     # Set license expiration date
     tday = date.today()
-    if(license_type == 'demo'):
-        expiration_date = tday.replace(month = tday.month + 3)
-    else:
+    
+    if(license_type == '1-year'):
         expiration_date = tday.replace(year = tday.year + 1)
+    elif(license_type == '2-year'):
+        expiration_date = tday.replace(year = tday.year + 2)
+    else:
+        expiration_date = tday.replace(month = tday.month + 3)
 
     if buyer and buyer_email and company and no_licenses and license_type: 
         company = company.lower().replace(' ','_')
