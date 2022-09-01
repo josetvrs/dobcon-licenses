@@ -58,12 +58,14 @@ def create_licenses():
         # Create x licenses with the name of the company
         for _ in range(no_licenses):
             license = db.dobcon_licenses.insert_one({
+                'name':'',
                 'company':company, 
                 'username':'', 
                 'email':'', 
                 'pc_device':'', 
                 'mob_device':'',
                 'role':'',
+                'area':'',
                 'status': 'active',
                 'license_type':license_type,
                 'creation_date':str(tday),
@@ -186,6 +188,7 @@ def assign_license():
     username = request.json['username']
     email = request.json['email']
     role = request.json['role']
+    area = request.json['area']
     if empty_license:
         if username and email and role:
             empty_id = empty_license['_id']
@@ -193,7 +196,8 @@ def assign_license():
                 'name': name,
                 'username': username,
                 'email': email,
-                'role': role
+                'role': role,
+                'area': area
             }})
             response = {'assigned user':username, 'assigned license':str(empty_id)}
         else:
@@ -211,6 +215,7 @@ def reassign_license():
     username = request.json['username']
     email = request.json['email']
     role = request.json['role']
+    area = request.json['area']
     lic = db.dobcon_licenses.find_one({'username':old_username})
     lic_id = lic['_id']
     db.dobcon_licenses.update_one({'_id': lic_id}, {'$set': {
@@ -219,7 +224,8 @@ def reassign_license():
         'email': email,
         'pc_device':'',
         'mob_device':'',
-        'role': role
+        'role': role,
+        'area': area
     }})
     response = {'license reassigned to':username, 'assigned license':str(lic_id)}
     return response
