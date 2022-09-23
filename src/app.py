@@ -19,44 +19,23 @@ app.secret_key = "jurw07yhf0w87fv0d"
 
 CORS(app)
 
-# SWAGGER DOCUMENTATION
-api = Api(app)
-app.config.update({
-    'APISPEC_SPEC': APISpec(
-        title = 'Dobcon Licenses',
-        version = 'v1',
-        plugins=[MarshmallowPlugin()],
-        openapi_version='2.0.0'
-    ),
-    'APISPEC_SWAGGER_URL':'/swagger/',
-    'APISPEC_SWAGGER_UI_URL':'/swagger-ui/'
-})
-docs = FlaskApiSpec(app)
-
-class LicensesResponseSchema(Schema):
-    message = fields.Str(default='Success')
-class LicensesRequestSchema(Schema):
-    api_type = fields.String(required=True, description="API type of Licenses API")
-
 # MongoDB
 cluster = "mongodb+srv://dobcon-adm:d68A7g77mWjmamWK@dobcon.vnaug.mongodb.net/?retryWrites=true&w=majority"
 client = MongoClient(cluster)
 db = client['dobcon_db']    
 
 # API
-class LicensesAPI(MethodResource, Resource):
-    @doc(description='My First GET Awesome API.', tags=['Home'])
-    @marshal_with(LicensesResponseSchema)  # marshalling
-    @app.route('/', methods = ['GET'])
-    def index():
-        msg = "<h1>Hello World</h1>"
-        return msg
 
-    @app.route('/licenses', methods=['GET'])
-    def get_licenses():
-        licenses = db.dobcon_licenses.find()
-        response = json_util.dumps(licenses)
-        return Response(response, mimetype='application/json')
+@app.route('/', methods = ['GET'])
+def index():
+    msg = "<h1>Hello World</h1>"
+    return msg
+
+@app.route('/licenses', methods=['GET'])
+def get_licenses():
+    licenses = db.dobcon_licenses.find()
+    response = json_util.dumps(licenses)
+    return Response(response, mimetype='application/json')
 
 @app.route('/get_purchase_history', methods=['GET'])
 def get_purchase_history():
@@ -307,9 +286,6 @@ def remove_all():
     response = "licenses delted"
     return response
 
-api.add_resource(LicensesAPI, '/')
-docs.register(LicensesAPI)
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=4000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
