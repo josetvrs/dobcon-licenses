@@ -1,0 +1,259 @@
+{
+    "openapi" : "3.0.0",
+    "info" : {
+        "description": "Licenses API documentation",
+        "version": "1.0.0",
+        "title": "Licenses API"
+    },
+    "tags": [
+        { "name": "Dobcon Admin", "description": "Dobcon admin functionality"},
+        { "name": "Licenses", "description": "License Management"},
+        { "name": "User device", "description": "Licenses Device Management"},
+        { "name": "Development Tests", "description": "Testing functions only"}
+    ],
+    "servers": [
+        { "url": "/" }
+    ],
+    "components": {
+        "schemas": {
+            "License": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "username": {"type": "string"},
+                    "email": {"type": "string"},
+                    "company": {"type": "string"},
+                    "role": {"type": "string"},
+                    "pc_device": {"type": "string"},
+                    "mob_device": {"type": "string"},
+                    "department": {"type": "string"},
+                    "status": {"type": "string"},
+                    "license_type": {"type": "string"},
+                    "creation_date": {"type": "string"},
+                    "expitation_date": {"type": "string"}
+                }
+            },
+            "Admin License": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "company": {"type": "string"},
+                    "username": {"type": "string"},
+                    "email": {"type": "string"},
+                    "pc_device":{"type": "string"},
+                    "mob_device":{"type": "string"},
+                    "role": {"type": "string"},
+                    "status":{"type": "string"}
+                }
+            },
+            "Purchase Info": {
+                "type": "object",
+                "properties": {
+                    "buyer": {"type": "string"},
+                    "buyer_email": {"type": "string"},
+                    "company": {"type": "string"},
+                    "number_licenses": {"type": "integer"},
+                    "license_type": {"type": "string"}
+
+                }
+
+            },
+            "Cognito User": {
+                "type": "object",
+                "properties": {
+                    "username": {"type": "string"},
+                    "preferred_username": {"type": "string"},
+                    "password": {"type": "string"},
+                    "custom:role": {"type": "string"},
+                    "custom:department": {"type": "string"},
+                    "custom:company": {"type": "string"}
+                }
+            }
+        }
+    },
+    "paths":{
+        "/": {
+            "get": {
+                "tags": ["Development Tests"],
+                "summary": "Display API title",
+                "description": "Display the API name to check if the API is running on the server"
+            }
+        },
+        "/get_purchase_history": {
+            "get":{
+                "tags": ["Dobcon Admin"],
+                "summary": "Get purchase history",
+                "description": "Get list of all purchase history event (Dobcon Admin only)",
+                "content": {
+                    "type": "application/json"
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "type": "application/json"
+                    }
+                }
+            }
+        },
+        "/create_licenses": {
+            "post": {
+                "tags": ["Licenses"],
+                "summary": "Create new licenses for company",
+                "parameters": [{
+                    "name": "License",
+                    "in":"body",
+                    "type": "application/json",
+                    "required": true,
+                    "description": "Object with License parameters",
+                    "example":{
+                        "buyer": "Buyer Name",
+                        "buyer_email": "buyer@globallynx.com",
+                        "company": "Global Lynx",
+                        "number_licenses": 2,
+                        "license_type": "demo"
+                    }
+                }],
+                "schema": {
+                    "$ref": "#/components/schemas/Purchas Info"
+                }  ,
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/create_admin": {
+            "post":{
+                "tags": ["Dobcon Admin"],
+                "summary": "Create new dobcon admin license",
+                "required": true,
+                "parameters": [{
+                    "name": "Purchase Information",
+                    "in":"body",
+                    "description": "Information for new licenses",
+                    "example":{
+                        "buyer": "Buyer Name",
+                        "buyer_email": "buyer@globallynx.com",
+                        "company": "Global Lynx",
+                        "number_licenses": 2,
+                        "license_type": "demo"
+                    },
+                    "required": true,
+                    "type": "application/json"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
+        },
+        "/get_device": {
+            "get":{
+                "tags": ["User device"],
+                "summary": "Get device bounded to user license",
+                "content": {
+                    "type": "application/json"
+                }
+            }
+        },
+        "/get_available_licenses": {
+            "get":{
+                "tags": ["Licenses"],
+                "summary": "Get device bounded to user license",
+                "content": {
+                    "type": "application/json"
+                }
+            }
+        },
+        "/register_device": {
+            "put":{
+                "tags": ["User device"],
+                "summary": "Bound user device to license",
+                "content": {
+                    "type": "application/json"
+                }
+            }
+        },
+        "/check_device": {
+            "post":{
+                "tags": ["User device"],
+                "summary": "Compare current device with bounded device",
+                "content": {
+                    "type": "application/json"
+                }
+            }
+        },
+        "/assign_license": {
+            "put":{
+                "tags": ["Licenses"],
+                "summary": "Assign license to new user account",
+                "content": {
+                    "type": "application/json"
+                }
+            }
+        },
+        "/reassign_license": {
+            "put":{
+                "tags": ["Licenses"],
+                "summary": "Re-assign license to new user",
+                "content": {
+                    "type": "application/json"
+                }
+            }
+        },
+        "/change_username": {
+            "put":{
+                "tags": ["Licenses"],
+                "summary": "Change user's username",
+                "content": {
+                    "type": "application/json"
+                }
+            }
+        },
+        "/renew_license": {
+            "put":{
+                "tags": ["Licenses"],
+                "summary": "Renew licenses",
+                "content": {
+                    "type": "application/json"
+                }
+            }
+        },
+        "/company_licenses/<company>": {
+            "get":{
+                "tags": ["Licenses"],
+                "summary": "Get all licenses of current company",
+                "content": {
+                    "type": "application/json"
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "type": "application/json"
+                    }
+                }
+            }
+        },
+        "/remove_all": {
+            "get":{
+                "tags": ["Development Tests"],
+                "summary": "Remove all licenses",
+                "description":"Remove all licenses that have been created (for test purposes only)",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
+        }
+
+    }
+}

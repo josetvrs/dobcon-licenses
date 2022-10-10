@@ -1,34 +1,40 @@
 from flask import Flask, jsonify, request, Response
-from flask_restful import Resource, Api
-from apispec import APISpec
-from marshmallow import Schema, fields
-from apispec.ext.marshmallow import MarshmallowPlugin
-from flask_apispec.extension import FlaskApiSpec
-from flask_apispec.views import MethodResource
-from flask_apispec import marshal_with, doc, use_kwargs
 from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 from pymongo import MongoClient
 from bson import json_util
 from bson.objectid import ObjectId
 import json
 from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
 
-# Flask application
+# Initiate Flask application
 app = Flask(__name__)
 app.secret_key = "jurw07yhf0w87fv0d"
 
 CORS(app)
 
-# MongoDB
+# MongoDB config
 cluster = "mongodb+srv://dobcon-adm:d68A7g77mWjmamWK@dobcon.vnaug.mongodb.net/?retryWrites=true&w=majority"
 client = MongoClient(cluster)
-db = client['dobcon_db']    
+db = client['dobcon_db']  
+
+# Swagger config
+SWAGGER_URL = '/swagger'
+API_URL = '/static/swagger.json'
+SWAGGER_BLUEPRINT = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': 'Licenses API'
+    }
+)
+app.register_blueprint(SWAGGER_BLUEPRINT, url_prefix = SWAGGER_URL)
 
 # API
-
 @app.route('/', methods = ['GET'])
 def index():
-    msg = "<h1>Hello World</h1>"
+    msg = "<h1>Licenses API</h1>"
     return msg
 
 @app.route('/licenses', methods=['GET'])
@@ -57,11 +63,11 @@ def create_licenses():
     tday = date.today()
     
     if(license_type == '1-year'):
-        expiration_date = tday.replace(year = tday.year + 1)
+        expiration_date = tday + relativedelta(years=1)
     elif(license_type == '2-year'):
-        expiration_date = tday.replace(year = tday.year + 2)
+        expiration_date = tday + relativedelta(years=2)
     else:
-        expiration_date = tday.replace(month = tday.month + 3)
+        expiration_date = tday + relativedelta(months=+3)
 
     if buyer and buyer_email and company and no_licenses and license_type: 
         company = company.lower().replace(' ','_')
@@ -75,7 +81,7 @@ def create_licenses():
                 'pc_device':'', 
                 'mob_device':'',
                 'role':'',
-                'area':'',
+                'department':'',
                 'status': 'active',
                 'license_type':license_type,
                 'creation_date':str(tday),
@@ -197,7 +203,7 @@ def assign_license():
     username = request.json['username']
     email = request.json['email']
     role = request.json['role']
-    area = request.json['area']
+    department = request.json['department']
     if empty_license:
         if username and email and role:
             empty_id = empty_license['_id']
@@ -206,7 +212,7 @@ def assign_license():
                 'username': username,
                 'email': email,
                 'role': role,
-                'area': area
+                'department': department
             }})
             response = {'assigned user':username, 'assigned license':str(empty_id)}
         else:
@@ -224,7 +230,7 @@ def reassign_license():
     username = request.json['username']
     email = request.json['email']
     role = request.json['role']
-    area = request.json['area']
+    department = request.json['department']
     lic = db.dobcon_licenses.find_one({'username':old_username})
     lic_id = lic['_id']
     db.dobcon_licenses.update_one({'_id': lic_id}, {'$set': {
@@ -234,7 +240,7 @@ def reassign_license():
         'pc_device':'',
         'mob_device':'',
         'role': role,
-        'area': area
+        'department': department
     }})
     response = {'license reassigned to':username, 'assigned license':str(lic_id)}
     return response
