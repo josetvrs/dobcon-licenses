@@ -49,24 +49,42 @@
             "Purchase Info": {
                 "type": "object",
                 "properties": {
-                    "buyer": {"type": "string"},
-                    "buyer_email": {"type": "string"},
-                    "company": {"type": "string"},
-                    "number_licenses": {"type": "integer"},
-                    "license_type": {"type": "string"}
-
+                    "buyer": {"type": "string", "example":"John Doe"},
+                    "buyer_email": {"type": "string", "example":"john@dobcon.com"},
+                    "company": {"type": "string", "example":"JohnCompany"},
+                    "number_licenses": {"type": "integer", "example": 2},
+                    "license_type": {"type": "string", "example": "2-year"}
                 }
 
             },
-            "Cognito User": {
+            "Username": {
+                "type":"object",
+                "properties":{
+                    "username":{
+                        "type": "string",
+                        "example": "testusername"
+                    }
+                }
+            },
+            "License Assign": {
                 "type": "object",
                 "properties": {
-                    "username": {"type": "string"},
-                    "preferred_username": {"type": "string"},
-                    "password": {"type": "string"},
-                    "custom:role": {"type": "string"},
-                    "custom:department": {"type": "string"},
-                    "custom:company": {"type": "string"}
+                    "company":{"type": "string", "example":"User Company"},
+                    "email": {"type":"string", "example":"user@globallynx.com"},
+                    "name": {"type": "string", "example":"User Name"},
+                    "role": {"type": "string", "example":"role"},
+                    "department": {"type":"string", "example":"development"}
+                }
+            },
+            "License Re-assign": {
+                "type": "object",
+                "properties": {
+                    "company":{"type": "string", "example":"User Company"},
+                    "old_username":{"type": "string", "example":"Old Username"},
+                    "email": {"type":"string", "example":"user@globallynx.com"},
+                    "name": {"type": "string", "example":"User Name"},
+                    "role": {"type": "string", "example":"role"},
+                    "department": {"type":"string", "example":"development"}
                 }
             }
         }
@@ -76,21 +94,52 @@
             "get": {
                 "tags": ["Development Tests"],
                 "summary": "Display API title",
-                "description": "Display the API name to check if the API is running on the server"
+                "description": "Display the API name to check if the API is running on the server",
+                "responses":{
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html":{
+                                "example": "<html><h1>Licenses API</h1></html>"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
             }
         },
         "/get_purchase_history": {
             "get":{
                 "tags": ["Dobcon Admin"],
-                "summary": "Get purchase history",
-                "description": "Get list of all purchase history event (Dobcon Admin only)",
+                "summary": "Get Dobcon licenses purchase history",
+                "description": "Gets a list of all license purchase events with information about the company, the number of licenses, the person that made the purchase and the email",
                 "content": {
                     "type": "application/json"
                 },
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "type": "application/json"
+                        "description": "Ok",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"array",
+                                    "items":{
+                                        "$ref":"#/components/schemas/Purchase Info"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
                     }
                 }
             }
@@ -98,27 +147,32 @@
         "/create_licenses": {
             "post": {
                 "tags": ["Licenses"],
-                "summary": "Create new licenses for company",
-                "parameters": [{
-                    "name": "License",
-                    "in":"body",
-                    "type": "application/json",
-                    "required": true,
-                    "description": "Object with License parameters",
-                    "example":{
-                        "buyer": "Buyer Name",
-                        "buyer_email": "buyer@globallynx.com",
-                        "company": "Global Lynx",
-                        "number_licenses": 2,
-                        "license_type": "demo"
+                "summary": "Purchase a new license package",
+                "description": "Creates a certain number of empty licenses for the company that made the purchase with specific expiration",
+                "requestBody":{
+                    "description":"License Purchase information",
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "$ref":"#/components/schemas/Purchase Info"
+                            }
+                        }
                     }
-                }],
-                "schema": {
-                    "$ref": "#/components/schemas/Purchas Info"
-                }  ,
+                },
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "array":{
+                                "example":"[\"6345d6d73c7dc50506a1c63f\", \"6345d6d73c7dc50506a1c640\"]"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
                     }
                 }
             }
@@ -126,25 +180,35 @@
         "/create_admin": {
             "post":{
                 "tags": ["Dobcon Admin"],
-                "summary": "Create new dobcon admin license",
+                "summary": "Create Dobcon account and license",
+                "description": "Creates a new Dobcon Admin account and license, returning the number of license created",
                 "required": true,
                 "parameters": [{
-                    "name": "Purchase Information",
                     "in":"body",
-                    "description": "Information for new licenses",
-                    "example":{
-                        "buyer": "Buyer Name",
-                        "buyer_email": "buyer@globallynx.com",
-                        "company": "Global Lynx",
-                        "number_licenses": 2,
-                        "license_type": "demo"
-                    },
-                    "required": true,
-                    "type": "application/json"
+                    "name":"Andmin Info",
+                    "required":true,
+                    "schema":{
+                        "type":"object",
+                        "properties": {
+                            "name": {"type":"string", "example":"Admin Name"},
+                            "email":{"type":"string", "example":"admin@globallynx.com"},
+                            "role": {"type":"string", "example":"DobconAdmin"}
+                        }
+                    }
                 }],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json":{
+                                "example": {
+                                    "Created Admin License":"s8sd76g87df6gs987sd"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
                     },
                     "404": {
                         "description": "NOT FOUND"
@@ -152,21 +216,78 @@
                 }
             }
         },
-        "/get_device": {
+        "/get_device/{username}": {
             "get":{
                 "tags": ["User device"],
-                "summary": "Get device bounded to user license",
-                "content": {
-                    "type": "application/json"
+                "summary": "Get user's license device",
+                "description":"Consult the device that is bounded to the license to check if is already registered",
+                "required": true,
+                "parameters": [{
+                    "in":"path",
+                    "name":"username",
+                    "description":"Username information",
+                    "required":true,
+                    "schema":{
+                        "type":"string",
+                        "example":"testusername"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "properties":{
+                                        "pc_device":{"type":"string", "example":"9485f34986f34fgdd"}
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
                 }
+                
             }
         },
-        "/get_available_licenses": {
+        "/get_available_licenses/{company}": {
             "get":{
                 "tags": ["Licenses"],
-                "summary": "Get device bounded to user license",
+                "summary": "Get the number of available licenses",
+                "description":"Returns the number of licenses that have not been assigned for the Super User company",
                 "content": {
                     "type": "application/json"
+                },
+                "parameters":[{
+                    "in":"path",
+                    "name":"company",
+                    "required":true,
+                    "type":"string",
+                    "description": "Name of the company to retrieve assigned licenses from",
+                    "example":"Dobcon"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json":{
+                                "example": {
+                                    "available_licenses":5
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
                 }
             }
         },
@@ -174,8 +295,41 @@
             "put":{
                 "tags": ["User device"],
                 "summary": "Bound user device to license",
-                "content": {
-                    "type": "application/json"
+                "description":"Registers the current device and link it to the license assigned to the user",
+                "requestBody":{
+                    "description":"Information about the device to assign to license",
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "type":"object",
+                                "properties":{
+                                    "username":{"type":"string", "example":"Username"},
+                                    "pc_device":{"type":"string", "example":"9f28h568fh5bf45sed"}
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "example":{
+                                        "device has been successfully linked to":"fiu874c5b3948cw6w45vb"
+                                    }
+                                }
+                            }
+                        }
+
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
                 }
             }
         },
@@ -183,8 +337,39 @@
             "post":{
                 "tags": ["User device"],
                 "summary": "Compare current device with bounded device",
-                "content": {
-                    "type": "application/json"
+                "requestBody":{
+                    "description":"This is the description",
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "type":"object",
+                                "properties": {
+                                    "email":{"type":"string", "example":"user@mail.com"},
+                                    "pc_device":{"type":"string", "example":"9485f34986f34fgdd"}
+                                } 
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "example":{
+                                        "Device check result":"deviceNotConfirmed", "License Status": "active"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
                 }
             }
         },
@@ -192,8 +377,37 @@
             "put":{
                 "tags": ["Licenses"],
                 "summary": "Assign license to new user account",
+                "description":"Assigns an empty license of the same company to a new user for Dobcon dashboard",
                 "content": {
                     "type": "application/json"
+                },
+                "requestBody":{
+                    "description":"New company user information to assign license to",
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "$ref":"#/components/schemas/License Assign"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json":{
+                                "example": {
+                                    "assigned user":"user@mail.com", "assigned_license":"9vw8wn8ty875tw"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
                 }
             }
         },
@@ -201,17 +415,73 @@
             "put":{
                 "tags": ["Licenses"],
                 "summary": "Re-assign license to new user",
-                "content": {
-                    "type": "application/json"
+                "description":"Changes the information from the license to be assigned to a new user",
+                "requestBody":{
+                    "description":"New company user information to assign license to",
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "$ref":"#/components/schemas/License Re-assign"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json":{
+                                "example": {
+                                    "license reassigned to":"user@mail.com", "assigned_license":"9vw8wn8ty875tw"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
                 }
             }
         },
         "/change_username": {
             "put":{
                 "tags": ["Licenses"],
-                "summary": "Change user's username",
-                "content": {
-                    "type": "application/json"
+                "summary": "Update Username",
+                "description":"Changes the username if specified by the user on first Sign-In",
+                "requestBody":{
+                    "description":"Previous and New user information",
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "type":"object",
+                                "properties":{
+                                    "old_username":{"type":"string", "example":"email@mail.com"},
+                                    "new_username":{"type":"string", "example":"Username"}
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json":{
+                                "example": {
+                                    "Updated username":"Username", "assigned license":"9n28c5297v58b2873c"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
                 }
             }
         },
@@ -219,34 +489,67 @@
             "put":{
                 "tags": ["Licenses"],
                 "summary": "Renew licenses",
-                "content": {
-                    "type": "application/json"
-                }
-            }
-        },
-        "/company_licenses/<company>": {
-            "get":{
-                "tags": ["Licenses"],
-                "summary": "Get all licenses of current company",
-                "content": {
-                    "type": "application/json"
+                "description":"Changes the license expiration date when it is renewed by the company and returns the license status",
+                "consumes": "application/json",
+                "requestBody":{
+                    "description":"Username assigned to license to be updated",
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "$ref":"#/components/schemas/Username"
+                            }
+                        }
+                    }
                 },
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "type": "application/json"
+                        "content": {
+                            "application/json":{
+                                "example": {
+                                    "New expiration date":"2024-10-12"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
                     }
                 }
             }
         },
-        "/remove_all": {
+        "/company_licenses/{company}": {
             "get":{
-                "tags": ["Development Tests"],
-                "summary": "Remove all licenses",
-                "description":"Remove all licenses that have been created (for test purposes only)",
+                "tags": ["Licenses"],
+                "summary": "Get Licenses for current user's company",
+                "description":"Get the licenses that have been already assigned with information about the users assigned to them",
+                "content": {
+                    "type": "application/json"
+                },
+                "parameters":[{
+                    "in":"path",
+                    "name":"company",
+                    "required":true,
+                    "type":"string",
+                    "description": "Name of the company to retrieve assigned licenses from",
+                    "example":"Dobcon"
+                }],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/License"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST"
                     },
                     "404": {
                         "description": "NOT FOUND"
@@ -254,6 +557,5 @@
                 }
             }
         }
-
     }
 }

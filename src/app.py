@@ -114,15 +114,17 @@ def create_admin():
         'status':'active'
     })
     print(license)
-    response = {'Created Admin license': str(license)}
+    response = {'Created Admin license': str(license.inserted_id)}
     return response
 
-@app.route('/get_device', methods = ['GET'])
-def get_device():
-    username = request.json['username']
+@app.route('/get_device/<username>', methods = ['GET'])
+def get_device(username):
     lic = db.dobcon_licenses.find_one({'username':username})
-    device = lic['pc_device']
-    response = {'pc_device' : device}
+    if lic:
+        device = lic['pc_device']
+        response = {'pc_device' : device}
+    else:
+        response = {'Error message':'User not found'}
     return response
 
 @app.route('/get_available_licenses/<company>', methods = ['GET'])
@@ -136,25 +138,27 @@ def get_available_licenses(company):
 def register_device():
     username = request.json['username']
     lic = db.dobcon_licenses.find_one({'username':username})
-    lic_id = lic['_id']
-    if request.json['pc_device']:
-        pc_dev = request.json['pc_device']
-        db.dobcon_licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
-            'pc_device': pc_dev
-        }})
-    #if request.json['mob_device']:
-        #mob_dev = request.json['mob_device']
-        #db.dobcon_licenses.update_one({'_id': ObjectId(lic)}, {'$set': {
-            #'mob_device': mob_dev
-        #}})
-    response = {'device has been successfully assigned to ' : str(lic_id)}
+    if lic:
+        lic_id = lic['_id']
+        if request.json['pc_device']:
+            pc_dev = request.json['pc_device']
+            db.dobcon_licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
+                'pc_device': pc_dev
+            }})
+        #if request.json['mob_device']:
+            #mob_dev = request.json['mob_device']
+            #db.dobcon_licenses.update_one({'_id': ObjectId(lic)}, {'$set': {
+                #'mob_device': mob_dev
+            #}})
+        response = {'device has been successfully linked to ' : str(lic_id)}
+    else:
+        response = {'Error message':'User not found'}
     return response
 
 @app.route('/check_device', methods = ['POST'])
 def check_device():
     email = request.json['email']
     pc_current_dev = request.json['pc_device']
-
     lic = db.dobcon_licenses.find_one({'email':email})
     if lic:
         lic_id = lic['_id']
@@ -200,21 +204,20 @@ def assign_license():
     company = request.json['company']
     company = company.lower().replace(' ','_')
     empty_license = db.dobcon_licenses.find_one({'company':company, 'username':''})
-    username = request.json['username']
     email = request.json['email']
     role = request.json['role']
     department = request.json['department']
     if empty_license:
-        if username and email and role:
+        if name and email and role:
             empty_id = empty_license['_id']
             db.dobcon_licenses.update_one({'_id': empty_id}, {'$set': {
                 'name': name,
-                'username': username,
+                'username': email,
                 'email': email,
                 'role': role,
                 'department': department
             }})
-            response = {'assigned user':username, 'assigned license':str(empty_id)}
+            response = {'assigned user':email, 'assigned license':str(empty_id)}
         else:
             response = 'information is not complete'
     else:
@@ -227,7 +230,6 @@ def reassign_license():
     old_username = request.json['old_username']
     company = request.json['company']
     company = company.lower().replace(' ','_')
-    username = request.json['username']
     email = request.json['email']
     role = request.json['role']
     department = request.json['department']
@@ -235,14 +237,14 @@ def reassign_license():
     lic_id = lic['_id']
     db.dobcon_licenses.update_one({'_id': lic_id}, {'$set': {
         'name': name,
-        'username': username,
+        'username': email,
         'email': email,
         'pc_device':'',
         'mob_device':'',
         'role': role,
         'department': department
     }})
-    response = {'license reassigned to':username, 'assigned license':str(lic_id)}
+    response = {'license reassigned to':email, 'assigned license':str(lic_id)}
     return response
 
 @app.route('/change_username', methods=['PUT'])
@@ -250,11 +252,14 @@ def chage_username():
     old_username = request.json['old_username']
     new_username = request.json['new_username']
     lic = db.dobcon_licenses.find_one({'username':old_username})
-    lic_id = lic['_id']
-    db.dobcon_licenses.update_one({'_id': lic_id}, {'$set': {
-        'username': new_username
-    }})
-    response = {'Updated username':new_username, 'assigned license':str(lic_id)}
+    if lic:
+        lic_id = lic['_id']
+        db.dobcon_licenses.update_one({'_id': lic_id}, {'$set': {
+            'username': new_username
+        }})
+        response = {'Updated username':new_username, 'assigned license':str(lic_id)}
+    else:
+        response = {'Updated username':None, "assigned license":None}
     return response
 
 
@@ -262,35 +267,39 @@ def chage_username():
 def renew_license():
     username = request.json['username']
     lic = db.dobcon_licenses.find_one({'username':username})
-    lic_id = lic['_id']
-    tday = date.today()
-    expiration_date = tday.replace(year = tday.year + 1)
-    lic_status = 'active'
-    db.dobcon_licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
-        'status': lic_status,
-        'expitation_date':str(expiration_date)
-    }})
-    response = {"License Status":lic_status}
+    if lic:
+        lic_id = lic['_id']
+        tday = date.today()
+        expiration = lic['expiration_date']
+        expirationDate = datetime.strptime(expiration, "%Y-%m-%d").date()
+        if tday > expirationDate:
+            expiration_date = tday + relativedelta(years=2)
+        else:
+            expiration_date = expirationDate + relativedelta(years=2) 
+        lic_status = 'active'
+        db.dobcon_licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
+            'status': lic_status,
+            'expiration_date':str(expiration_date)
+        }})
+        response = {"New expiration date":str(expiration_date)}
+    else:
+        response = {"Error message":"user not found"}
     return response
     
-
 @app.route('/company_licenses/<company>', methods = ['GET'])
 def company_licenses(company):
     company = company.lower().replace(' ','_')
     data = []
     cursor = list(db.dobcon_licenses.find({'company':company}))
-    for license in cursor:
-        if license['username'] != '':
-            license['_id'] = str(license['_id'])
-            data.append(license)
-    return jsonify(data)
-
-# Remove all licenses in collection (FOR TEST ONLY)
-@app.route('/remove_all', methods=['GET'])
-def remove_all():
-    db.dobcon_licenses.delete_many({})
-    response = "licenses delted"
-    return response
+    if cursor:
+        for license in cursor:
+            if license['username'] != '':
+                license['_id'] = str(license['_id'])
+                data.append(license)
+        response = data
+    else:
+        response = "Company: " + company + " not found."
+    return jsonify(response)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
