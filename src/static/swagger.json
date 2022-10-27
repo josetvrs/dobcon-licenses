@@ -2,7 +2,7 @@
     "openapi" : "3.0.0",
     "info" : {
         "description": "Licenses API documentation",
-        "version": "1.0.0",
+        "version": "0.1.0",
         "title": "Licenses API"
     },
     "tags": [
@@ -19,31 +19,32 @@
             "License": {
                 "type": "object",
                 "properties": {
-                    "id": {"type": "string"},
-                    "username": {"type": "string"},
-                    "email": {"type": "string"},
-                    "company": {"type": "string"},
-                    "role": {"type": "string"},
-                    "pc_device": {"type": "string"},
-                    "mob_device": {"type": "string"},
-                    "department": {"type": "string"},
-                    "status": {"type": "string"},
-                    "license_type": {"type": "string"},
-                    "creation_date": {"type": "string"},
-                    "expitation_date": {"type": "string"}
+                    "id": {"type": "string", "example":"5f9bfbhw3487tbfnfh934"},
+                    "name": {"type": "string", "example":"Jose Tavares"},
+                    "username": {"type": "string", "example":"josetvrs"},
+                    "email": {"type": "string", "example":"jose.tavares@globallynx.com"},
+                    "company": {"type": "string", "example":"Dobcon"},
+                    "role": {"type": "string", "example":"developer"},
+                    "pc_device": {"type": "string", "example":"402fb39856bv394876vb5ncf"},
+                    "mob_device": {"type": "string", "example":"484973fn2047vnt09t87vnw5"},
+                    "department": {"type": "string", "example":"development"},
+                    "status": {"type": "string", "example":"active"},
+                    "license_type": {"type": "string", "example":"2-year"},
+                    "creation_date": {"type": "string", "example":"2022-10-10"},
+                    "expitation_date": {"type": "string", "example":"2024-10-10"}
                 }
             },
             "Admin License": {
                 "type": "object",
                 "properties": {
-                    "name": {"type": "string"},
-                    "company": {"type": "string"},
-                    "username": {"type": "string"},
-                    "email": {"type": "string"},
-                    "pc_device":{"type": "string"},
-                    "mob_device":{"type": "string"},
-                    "role": {"type": "string"},
-                    "status":{"type": "string"}
+                    "name": {"type": "string", "example":"Jose Tavares"},
+                    "company": {"type": "string", "example":"Dobcon"},
+                    "username": {"type": "string", "example":"josetvrs"},
+                    "email": {"type": "string", "example":"jose.tavares@globallynx.com"},
+                    "pc_device":{"type": "string", "example":"any"},
+                    "mob_device":{"type": "string", "example":"any"},
+                    "role": {"type": "string", "example":"developer"},
+                    "status":{"type": "string", "example":"active"}
                 }
             },
             "Purchase Info": {
