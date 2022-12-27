@@ -15,9 +15,9 @@ app.secret_key = "jurw07yhf0w87fv0d"
 CORS(app)
 
 # MongoDB config
-cluster = "mongodb+srv://dobcon-adm:d68A7g77mWjmamWK@dobcon.vnaug.mongodb.net/?retryWrites=true&w=majority"
+cluster = "mongodb+srv://Admin:Dobcon2022@dobcon.udigbzh.mongodb.net/?retryWrites=true&w=majority"
 client = MongoClient(cluster)
-db = client['dobcon_db']  
+db = client['dobcon_licenses']  
 
 # Swagger config
 SWAGGER_URL = '/swagger'
@@ -39,7 +39,7 @@ def index():
 
 @app.route('/licenses', methods=['GET'])
 def get_licenses():
-    licenses = db.dobcon_licenses.find()
+    licenses = db.licenses.find()
     response = json_util.dumps(licenses)
     return Response(response, mimetype='application/json')
 
@@ -73,7 +73,7 @@ def create_licenses():
         company = company.lower().replace(' ','_')
         # Create x licenses with the name of the company
         for _ in range(no_licenses):
-            license = db.dobcon_licenses.insert_one({
+            license = db.licenses.insert_one({
                 'name':'',
                 'company':company, 
                 'username':'', 
@@ -103,7 +103,7 @@ def create_admin():
     name = request.json["name"]
     email = request.json['email']
     role = request.json['role']
-    license = db.dobcon_licenses.insert_one({
+    license = db.licenses.insert_one({
         'name': name,
         'company': company,
         'username': email,
@@ -119,7 +119,7 @@ def create_admin():
 
 @app.route('/get_device/<username>', methods = ['GET'])
 def get_device(username):
-    lic = db.dobcon_licenses.find_one({'username':username})
+    lic = db.licenses.find_one({'username':username})
     if lic:
         device = lic['pc_device']
         response = {'pc_device' : device}
@@ -130,24 +130,24 @@ def get_device(username):
 @app.route('/get_available_licenses/<company>', methods = ['GET'])
 def get_available_licenses(company):
     company = company.lower().replace(' ','_')
-    available_lic = db.dobcon_licenses.count_documents({'company':company, 'username':''})
+    available_lic = db.licenses.count_documents({'company':company, 'username':''})
     response = {'available_licenses' : available_lic}
     return response
 
 @app.route('/register_device', methods = ['PUT'])
 def register_device():
     username = request.json['username']
-    lic = db.dobcon_licenses.find_one({'username':username})
+    lic = db.licenses.find_one({'username':username})
     if lic:
         lic_id = lic['_id']
         if request.json['pc_device']:
             pc_dev = request.json['pc_device']
-            db.dobcon_licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
+            db.licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
                 'pc_device': pc_dev
             }})
         #if request.json['mob_device']:
             #mob_dev = request.json['mob_device']
-            #db.dobcon_licenses.update_one({'_id': ObjectId(lic)}, {'$set': {
+            #db.licenses.update_one({'_id': ObjectId(lic)}, {'$set': {
                 #'mob_device': mob_dev
             #}})
         response = {'device has been successfully linked to ' : str(lic_id)}
@@ -159,7 +159,7 @@ def register_device():
 def check_device():
     email = request.json['email']
     pc_current_dev = request.json['pc_device']
-    lic = db.dobcon_licenses.find_one({'email':email})
+    lic = db.licenses.find_one({'email':email})
     if lic:
         lic_id = lic['_id']
         pc_dev = lic['pc_device']
@@ -169,7 +169,7 @@ def check_device():
             return response
 
         if (pc_dev == ''):
-            db.dobcon_licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
+            db.licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
             'pc_device': pc_current_dev
             }})
             response = {"Device check result":"deviceConfirmed"}
@@ -184,7 +184,7 @@ def check_device():
                     response = {"Device check result":"deviceConfirmed", "License Status":lic_status}
                 else:
                     lic_status = 'not-active'
-                    db.dobcon_licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
+                    db.licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
                     'status': lic_status
                     }})
                     response = {"Device check result":"deviceNotConfirmed", "License Status":lic_status}
@@ -203,14 +203,14 @@ def assign_license():
     name = request.json['name']
     company = request.json['company']
     company = company.lower().replace(' ','_')
-    empty_license = db.dobcon_licenses.find_one({'company':company, 'username':''})
+    empty_license = db.licenses.find_one({'company':company, 'username':''})
     email = request.json['email']
     role = request.json['role']
     department = request.json['department']
     if empty_license:
         if name and email and role:
             empty_id = empty_license['_id']
-            db.dobcon_licenses.update_one({'_id': empty_id}, {'$set': {
+            db.licenses.update_one({'_id': empty_id}, {'$set': {
                 'name': name,
                 'username': email,
                 'email': email,
@@ -233,9 +233,9 @@ def reassign_license():
     email = request.json['email']
     role = request.json['role']
     department = request.json['department']
-    lic = db.dobcon_licenses.find_one({'username':old_username})
+    lic = db.licenses.find_one({'username':old_username})
     lic_id = lic['_id']
-    db.dobcon_licenses.update_one({'_id': lic_id}, {'$set': {
+    db.licenses.update_one({'_id': lic_id}, {'$set': {
         'name': name,
         'username': email,
         'email': email,
@@ -251,10 +251,10 @@ def reassign_license():
 def chage_username():
     old_username = request.json['old_username']
     new_username = request.json['new_username']
-    lic = db.dobcon_licenses.find_one({'username':old_username})
+    lic = db.licenses.find_one({'username':old_username})
     if lic:
         lic_id = lic['_id']
-        db.dobcon_licenses.update_one({'_id': lic_id}, {'$set': {
+        db.licenses.update_one({'_id': lic_id}, {'$set': {
             'username': new_username
         }})
         response = {'Updated username':new_username, 'assigned license':str(lic_id)}
@@ -266,7 +266,7 @@ def chage_username():
 @app.route('/renew_license', methods = ['PUT'])
 def renew_license():
     username = request.json['username']
-    lic = db.dobcon_licenses.find_one({'username':username})
+    lic = db.licenses.find_one({'username':username})
     if lic:
         lic_id = lic['_id']
         tday = date.today()
@@ -277,7 +277,7 @@ def renew_license():
         else:
             expiration_date = expirationDate + relativedelta(years=2) 
         lic_status = 'active'
-        db.dobcon_licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
+        db.licenses.update_one({'_id': ObjectId(lic_id)}, {'$set': {
             'status': lic_status,
             'expiration_date':str(expiration_date)
         }})
@@ -290,7 +290,7 @@ def renew_license():
 def company_licenses(company):
     company = company.lower().replace(' ','_')
     data = []
-    cursor = list(db.dobcon_licenses.find({'company':company}))
+    cursor = list(db.licenses.find({'company':company}))
     if cursor:
         for license in cursor:
             if license['username'] != '':
