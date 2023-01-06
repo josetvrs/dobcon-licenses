@@ -1,4 +1,4 @@
-#!/home/josetvrs/dobcon/licensesapi/dobcon-licenses/venv/bin/python3
+#!/home/tavarock/dev/dobcon/dobcon-licenses/licenses-back/venv/bin/python3
 
 # $Id: rst2xml.py 4564 2006-05-21 20:44:42Z wiemann $
 # Author: David Goodger <goodger@python.org>

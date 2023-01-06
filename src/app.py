@@ -228,7 +228,7 @@ def assign_license():
 def reassign_license():
     name = request.json['name']
     old_username = request.json['old_username']
-    company = request.json['company']
+    company = request.json['company']   
     company = company.lower().replace(' ','_')
     email = request.json['email']
     role = request.json['role']
@@ -245,6 +245,23 @@ def reassign_license():
         'department': department
     }})
     response = {'license reassigned to':email, 'assigned license':str(lic_id)}
+    return response
+
+@app.route('/delete_user', methods=['PUT'])
+def delete_user():
+    username = request.json['username']
+    lic = db.licenses.find_one({'username':username})
+    lic_id = lic['_id']
+    db.licenses.update_one({'_id':lic_id}, {'$set': {
+        'name':'',
+        'username':'',
+        'email':'',
+        'pc_device':'',
+        'mob_device':'',
+        'role':'',
+        'department':'',
+    }})
+    response = {'license update':'license is free'}
     return response
 
 @app.route('/change_username', methods=['PUT'])

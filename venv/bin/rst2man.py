@@ -1,4 +1,4 @@
-#!/home/josetvrs/dobcon/licensesapi/dobcon-licenses/venv/bin/python3
+#!/home/tavarock/dev/dobcon/dobcon-licenses/licenses-back/venv/bin/python3
 
 # Author:
 # Contact: grubert@users.sf.net

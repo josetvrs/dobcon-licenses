@@ -1,4 +1,4 @@
-#!/home/josetvrs/dobcon/licensesapi/dobcon-licenses/venv/bin/python3
+#!/home/tavarock/dev/dobcon/dobcon-licenses/licenses-back/venv/bin/python3
 # -*- coding: utf8 -*-
 # :Copyright: © 2015 Günter Milde.
 # :License: Released under the terms of the `2-Clause BSD license`_, in short:

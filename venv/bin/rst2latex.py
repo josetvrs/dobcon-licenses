@@ -1,4 +1,4 @@
-#!/home/josetvrs/dobcon/licensesapi/dobcon-licenses/venv/bin/python3
+#!/home/tavarock/dev/dobcon/dobcon-licenses/licenses-back/venv/bin/python3
 
 # $Id: rst2latex.py 5905 2009-04-16 12:04:49Z milde $
 # Author: David Goodger <goodger@python.org>

@@ -1,4 +1,4 @@
-#!/home/josetvrs/dobcon/licensesapi/dobcon-licenses/venv/bin/python3
+#!/home/tavarock/dev/dobcon/dobcon-licenses/licenses-back/venv/bin/python3
 
 # $Id: rst2html4.py 7994 2016-12-10 17:41:45Z milde $
 # Author: David Goodger <goodger@python.org>

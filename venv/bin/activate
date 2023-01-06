@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/josetvrs/dobcon/licensesapi/dobcon-licenses/venv"
+VIRTUAL_ENV="/home/tavarock/dev/dobcon/dobcon-licenses/licenses-back/venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

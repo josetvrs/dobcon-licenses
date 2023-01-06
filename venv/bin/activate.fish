@@ -29,7 +29,7 @@ end
 # unset irrelevant variables
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/josetvrs/dobcon/licensesapi/dobcon-licenses/venv"
+set -gx VIRTUAL_ENV "/home/tavarock/dev/dobcon/dobcon-licenses/licenses-back/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
